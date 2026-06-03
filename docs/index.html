@@ -165,6 +165,25 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 #snack.green{background:var(--green2)}
 #snack.red{background:var(--red)}
 #snack.orange{background:var(--orange)}
+/* ── ACTION LOG ── */
+.log-section{background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 12px}
+.log-header{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;
+  color:var(--text2);margin-bottom:6px;cursor:pointer;user-select:none}
+.log-rows{display:flex;flex-direction:column;gap:0;max-height:150px;overflow-y:auto}
+.log-row{display:flex;align-items:center;gap:8px;padding:5px 0;
+  border-bottom:1px solid rgba(255,255,255,.04)}
+.log-row:last-child{border-bottom:none}
+.log-ball{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:12px;font-weight:900;flex-shrink:0;
+  box-shadow:inset -1px -1px 4px rgba(0,0,0,.4)}
+.log-player{font-size:13px;font-weight:600;flex:1;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.log-type{font-size:14px;margin-right:2px}
+.log-delta{font-size:14px;font-weight:900;white-space:nowrap}
+.log-delta.pos{color:#4CAF50}
+.log-delta.neg{color:#EF5350}
+.log-delta.neu{color:#FFA726}
+.log-empty{color:var(--text3);font-size:12px;font-style:italic;padding:4px 0}
 /* ── INSTALL BANNER ── */
 #install-banner{display:none;background:var(--green2);padding:12px 16px;
   text-align:center;font-size:13px;gap:8px;align-items:center;justify-content:center}
@@ -232,6 +251,15 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
   </div>
   <div class="game-topbar" id="game-topbar">0/11 boules · 132 pts restants</div>
   <div class="scoreboard" id="scoreboard"></div>
+  <!-- Log des actions -->
+  <div class="log-section" id="log-section">
+    <div class="log-header" onclick="toggleLog()">
+      <span>📋</span>
+      <span style="flex:1">Historique des boules</span>
+      <span id="log-chevron">▼</span>
+    </div>
+    <div id="log-rows"><div class="log-empty">Aucune action pour l'instant…</div></div>
+  </div>
   <div class="ball-section">
     <div class="step-hint" id="step-hint">1. Sélectionnez un joueur</div>
     <div class="ball-grid" id="ball-grid"></div>
@@ -422,6 +450,7 @@ function renderGame() {
   document.getElementById('undo-btn').style.opacity = prevGame?'1':'0.3';
   renderScoreboard();
   renderBallGrid();
+  renderLog();
   updateActionBar();
   updateStepHint();
   if(game.isGameOver) setTimeout(showGameOver, 600);
@@ -570,6 +599,37 @@ function renderHistory() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ── ACTION LOG ───────────────────────────────────────────────────
+let logOpen = true;
+
+function renderLog() {
+  const rows = document.getElementById('log-rows');
+  if(!game || !game.actions.length){
+    rows.innerHTML='<div class="log-empty">Aucune action pour l\'instant…</div>';
+    return;
+  }
+  const actions = [...game.actions].reverse();
+  rows.innerHTML = actions.map(a=>{
+    const color = BALL_COLORS[a.ball]||'#555';
+    const tc = BALL_TEXT[a.ball]||'#fff';
+    const dc = a.delta>0?'pos':a.delta<0?'neg':'neu';
+    const dt = a.delta>0?'+'+a.delta:a.delta===0?'0':''+a.delta;
+    const icon = a.type==='scored'?'✓':a.type==='fault'?'✗':'⚡';
+    return `<div class="log-row">
+      <div class="log-ball" style="background:${color};color:${tc}">${a.ball}</div>
+      <div class="log-player">${a.playerName}</div>
+      <span class="log-type">${icon}</span>
+      <div class="log-delta ${dc}">${dt} pts</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleLog(){
+  logOpen=!logOpen;
+  document.getElementById('log-rows').style.display=logOpen?'':'none';
+  document.getElementById('log-chevron').textContent=logOpen?'▼':'▶';
 }
 
 // ── SNACKBAR ─────────────────────────────────────────────────────
