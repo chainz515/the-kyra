@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>The Kyra — Icône</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0a0a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+    gap: 28px;
+  }
+  h1 { color: #fff; font-size: 18px; opacity: 0.6; letter-spacing: 3px; }
+  #icon {
+    border-radius: 22.5%;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.08);
+  }
+  .btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s;
+  }
+  button:hover { opacity: 0.85; }
+  .btn-primary { background: #2E7D32; color: #fff; }
+  .btn-secondary { background: #1a1a1a; color: #fff; border: 1px solid #333; }
+  .sizes { color: #555; font-size: 12px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>THE KYRA — ICON PREVIEW</h1>
+<canvas id="icon" width="512" height="512"></canvas>
+
+<div class="btns">
+  <button class="btn-primary" onclick="download(1024)">⬇ Télécharger 1024×1024</button>
+  <button class="btn-secondary" onclick="download(512)">⬇ 512×512</button>
+  <button class="btn-secondary" onclick="download(192)">⬇ 192×192</button>
+</div>
+<p class="sizes">Utilisez le fichier 1024×1024 pour flutter_launcher_icons</p>
+
+<script>
+const S = 512;
+const canvas = document.getElementById('icon');
+const ctx = canvas.getContext('2d');
+
+function drawIcon(ctx, S) {
+  ctx.clearRect(0, 0, S, S);
+
+  // ── Fond arrondi vert billard ───────────────────────────────────────────
+  const bgGrad = ctx.createLinearGradient(0, 0, S, S);
+  bgGrad.addColorStop(0, '#1B5E20');
+  bgGrad.addColorStop(0.5, '#145218');
+  bgGrad.addColorStop(1, '#0d3d12');
+  ctx.fillStyle = bgGrad;
+  ctx.beginPath();
+  ctx.roundRect(0, 0, S, S, S * 0.2);
+  ctx.fill();
+
+  // Texture feutre subtile
+  ctx.globalAlpha = 0.04;
+  for (let i = 0; i < S; i += 3) {
+    for (let j = 0; j < S; j += 3) {
+      if (Math.random() > 0.5) {
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(i, j, 1.5, 1.5);
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  // ── Boule ────────────────────────────────────────────────────────────────
+  const bx = S * 0.5;
+  const by = S * 0.42;
+  const br = S * 0.285;
+
+  // Ombre portée
+  const shadowGrad = ctx.createRadialGradient(bx + br*0.15, by + br*0.8, 0, bx, by + br*0.6, br*1.1);
+  shadowGrad.addColorStop(0, 'rgba(0,0,0,0.55)');
+  shadowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = shadowGrad;
+  ctx.beginPath();
+  ctx.ellipse(bx + br*0.05, by + br*0.88, br*0.9, br*0.22, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Corps de la boule — dégradé sphérique
+  const ballGrad = ctx.createRadialGradient(
+    bx - br*0.32, by - br*0.3, br*0.05,
+    bx + br*0.1,  by + br*0.1, br*1.05
+  );
+  ballGrad.addColorStop(0,   '#3d3d3d');
+  ballGrad.addColorStop(0.25,'#1a1a1a');
+  ballGrad.addColorStop(0.7, '#0d0d0d');
+  ballGrad.addColorStop(1,   '#050505');
+  ctx.fillStyle = ballGrad;
+  ctx.beginPath();
+  ctx.arc(bx, by, br, 0, Math.PI*2);
+  ctx.fill();
+
+  // Contour de boule
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // ── Cercle blanc (style 8-ball) ──────────────────────────────────────────
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(bx, by, br * 0.43, 0, Math.PI*2);
+  ctx.fill();
+
+  // Légère ombre dans le cercle blanc
+  const circleShad = ctx.createRadialGradient(bx, by, 0, bx, by + br*0.08, br*0.43);
+  circleShad.addColorStop(0, 'rgba(0,0,0,0)');
+  circleShad.addColorStop(1, 'rgba(0,0,0,0.08)');
+  ctx.fillStyle = circleShad;
+  ctx.beginPath();
+  ctx.arc(bx, by, br * 0.43, 0, Math.PI*2);
+  ctx.fill();
+
+  // ── Lettre K ─────────────────────────────────────────────────────────────
+  ctx.save();
+  ctx.fillStyle = '#111111';
+  ctx.font = `900 ${br * 0.62}px 'Georgia', serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('K', bx + br*0.02, by + br*0.03);
+  ctx.restore();
+
+  // ── Reflet principal (brillance) ─────────────────────────────────────────
+  const shine = ctx.createRadialGradient(
+    bx - br*0.38, by - br*0.38, 0,
+    bx - br*0.22, by - br*0.22, br*0.72
+  );
+  shine.addColorStop(0,   'rgba(255,255,255,0.52)');
+  shine.addColorStop(0.35,'rgba(255,255,255,0.18)');
+  shine.addColorStop(0.7, 'rgba(255,255,255,0.04)');
+  shine.addColorStop(1,   'rgba(255,255,255,0)');
+  ctx.fillStyle = shine;
+  ctx.beginPath();
+  ctx.arc(bx, by, br, 0, Math.PI*2);
+  ctx.fill();
+
+  // Petit point de reflet vif
+  ctx.fillStyle = 'rgba(255,255,255,0.75)';
+  ctx.beginPath();
+  ctx.ellipse(bx - br*0.3, by - br*0.32, br*0.095, br*0.06, -0.4, 0, Math.PI*2);
+  ctx.fill();
+
+  // ── Texte THE KYRA ───────────────────────────────────────────────────────
+  const textY = S * 0.845;
+
+  // Contour doré subtil
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.7)';
+  ctx.shadowBlur = S * 0.018;
+  ctx.shadowOffsetY = S * 0.006;
+
+  // Remplissage dégradé doré / blanc
+  const textGrad = ctx.createLinearGradient(0, textY - S*0.06, 0, textY + S*0.01);
+  textGrad.addColorStop(0,   '#ffffff');
+  textGrad.addColorStop(0.5, '#e8e8e8');
+  textGrad.addColorStop(1,   '#cccccc');
+
+  ctx.fillStyle = textGrad;
+  ctx.font = `900 ${S * 0.092}px 'Arial Narrow', 'Arial', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.letterSpacing = `${S * 0.008}px`;
+  ctx.fillText('THE KYRA', S*0.5, textY);
+  ctx.restore();
+
+  // Ligne décorative sous le texte
+  const lineY = textY + S*0.022;
+  const lineW = S * 0.38;
+  const lineGrad = ctx.createLinearGradient(S*0.5 - lineW/2, 0, S*0.5 + lineW/2, 0);
+  lineGrad.addColorStop(0,   'rgba(255,255,255,0)');
+  lineGrad.addColorStop(0.5, 'rgba(255,255,255,0.45)');
+  lineGrad.addColorStop(1,   'rgba(255,255,255,0)');
+  ctx.strokeStyle = lineGrad;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(S*0.5 - lineW/2, lineY);
+  ctx.lineTo(S*0.5 + lineW/2, lineY);
+  ctx.stroke();
+
+  // ── Cadre intérieur fin ───────────────────────────────────────────────────
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = S * 0.006;
+  ctx.beginPath();
+  ctx.roundRect(S*0.025, S*0.025, S*0.95, S*0.95, S*0.175);
+  ctx.stroke();
+}
+
+// Rendu initial
+drawIcon(ctx, S);
+
+// ── Téléchargement ────────────────────────────────────────────────────────
+function download(size) {
+  const offscreen = document.createElement('canvas');
+  offscreen.width = size;
+  offscreen.height = size;
+  const octx = offscreen.getContext('2d');
+  drawIcon(octx, size);
+  const link = document.createElement('a');
+  link.download = `the-kyra-icon-${size}.png`;
+  link.href = offscreen.toDataURL('image/png');
+  link.click();
+}
+</script>
+</body>
+</html>

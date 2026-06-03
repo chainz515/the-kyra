@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>The Kyra — QR Code</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1f13;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', sans-serif;
+    padding: 24px;
+  }
+  .card {
+    background: #1a2e1e;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 36px 32px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  }
+  .logo { font-size: 36px; margin-bottom: 4px; }
+  h1 {
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .sub {
+    color: rgba(255,255,255,0.4);
+    font-size: 12px;
+    font-style: italic;
+    margin-bottom: 28px;
+  }
+  .qr-wrapper {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px;
+    display: inline-block;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+  #qrcode canvas, #qrcode img { display: block; }
+  .label {
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  input {
+    flex: 1;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.07);
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+  }
+  input:focus { border-color: #4CAF50; }
+  input::placeholder { color: rgba(255,255,255,0.3); }
+  .btns { display: flex; gap: 10px; flex-direction: column; }
+  button {
+    padding: 13px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  button:hover { opacity: 0.88; }
+  button:active { transform: scale(0.98); }
+  .btn-dl { background: #2E7D32; color: #fff; }
+  .btn-gen { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+  .footer {
+    margin-top: 22px;
+    color: rgba(255,255,255,0.25);
+    font-size: 11px;
+    font-style: italic;
+  }
+  .hint {
+    background: rgba(76,175,80,0.12);
+    border: 1px solid rgba(76,175,80,0.3);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: rgba(255,255,255,0.65);
+    font-size: 12px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  .hint strong { color: #81C784; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🎱</div>
+  <h1>THE KYRA</h1>
+  <p class="sub">Créé par Héros Ileko</p>
+
+  <div class="qr-wrapper">
+    <div id="qrcode"></div>
+  </div>
+
+  <div class="hint">
+    <strong>Comment obtenir le lien OneDrive :</strong><br>
+    1. Ouvrez OneDrive → Documents<br>
+    2. Clic droit sur <strong>TheKyra.apk</strong><br>
+    3. → Partager → Copier le lien<br>
+    4. Collez-le ci-dessous ↓
+  </div>
+
+  <p class="label">Lien de téléchargement</p>
+  <div class="input-row">
+    <input type="url" id="urlInput"
+           placeholder="https://1drv.ms/u/s!..."
+           oninput="generate()" />
+  </div>
+
+  <div class="btns">
+    <button class="btn-dl" onclick="download()">⬇ Télécharger le QR Code PNG</button>
+    <button class="btn-gen" onclick="printQR()">🖨 Imprimer</button>
+  </div>
+
+  <p class="footer">Scannez avec un téléphone Android pour installer The Kyra</p>
+</div>
+
+<script>
+  let qrCanvas = null;
+
+  function generate() {
+    const url = document.getElementById('urlInput').value.trim();
+    const container = document.getElementById('qrcode');
+    container.innerHTML = '';
+
+    const text = url || 'https://thekyra.app';
+
+    QRCode.toCanvas(text, {
+      width: 240,
+      margin: 1,
+      color: {
+        dark: '#0d1f13',
+        light: '#ffffff'
+      },
+      errorCorrectionLevel: 'H'
+    }, (err, canvas) => {
+      if (!err) {
+        qrCanvas = canvas;
+        container.appendChild(canvas);
+        addLogo(canvas);
+      }
+    });
+  }
+
+  function addLogo(canvas) {
+    const ctx = canvas.getContext('2d');
+    const S = canvas.width;
+    const logoSize = S * 0.22;
+    const lx = (S - logoSize) / 2;
+    const ly = (S - logoSize) / 2;
+
+    // Fond blanc arrondi derrière le logo
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(lx - 4, ly - 4, logoSize + 8, logoSize + 8, 10);
+    ctx.fill();
+
+    // Fond vert
+    ctx.fillStyle = '#1B5E20';
+    ctx.beginPath();
+    ctx.roundRect(lx, ly, logoSize, logoSize, 8);
+    ctx.fill();
+
+    // Boule noire
+    const bx = lx + logoSize/2;
+    const by = ly + logoSize/2;
+    const br = logoSize * 0.38;
+
+    const grad = ctx.createRadialGradient(bx-br*0.3, by-br*0.3, 0, bx, by, br);
+    grad.addColorStop(0, '#444');
+    grad.addColorStop(1, '#000');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(bx, by, br, 0, Math.PI*2);
+    ctx.fill();
+
+    // Cercle blanc
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(bx, by, br*0.42, 0, Math.PI*2);
+    ctx.fill();
+
+    // K
+    ctx.fillStyle = '#111';
+    ctx.font = `bold ${br*0.58}px Georgia`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('K', bx, by + br*0.03);
+
+    // Reflet
+    const shine = ctx.createRadialGradient(bx-br*0.35, by-br*0.35, 0, bx-br*0.2, by-br*0.2, br*0.6);
+    shine.addColorStop(0, 'rgba(255,255,255,0.45)');
+    shine.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = shine;
+    ctx.beginPath();
+    ctx.arc(bx, by, br, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  function download() {
+    if (!qrCanvas) { generate(); setTimeout(download, 300); return; }
+
+    // Canvas final avec texte
+    const final = document.createElement('canvas');
+    final.width = 480;
+    final.height = 560;
+    const ctx = final.getContext('2d');
+
+    // Fond blanc
+    ctx.fillStyle = '#ffffff';
+    ctx.roundRect(0, 0, 480, 560, 20);
+    ctx.fill();
+
+    // QR centré
+    ctx.drawImage(qrCanvas, (480 - qrCanvas.width*1.5)/2, 40,
+                  qrCanvas.width*1.5, qrCanvas.height*1.5);
+
+    // Texte
+    ctx.fillStyle = '#1B5E20';
+    ctx.font = 'bold 28px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('THE KYRA', 240, 470);
+
+    ctx.fillStyle = '#666';
+    ctx.font = '14px Arial';
+    ctx.fillText('Scannez pour télécharger', 240, 498);
+
+    ctx.fillStyle = '#999';
+    ctx.font = 'italic 12px Arial';
+    ctx.fillText('Créé par Héros Ileko', 240, 526);
+
+    const link = document.createElement('a');
+    link.download = 'TheKyra-QRCode.png';
+    link.href = final.toDataURL('image/png');
+    link.click();
+  }
+
+  function printQR() {
+    window.print();
+  }
+
+  // Génération initiale avec placeholder
+  generate();
+</script>
+</body>
+</html>
