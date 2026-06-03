@@ -62,6 +62,9 @@ class GameScreen extends ConsumerWidget {
           // ── Scores en temps réel ────────────────────────────────────────
           _ScoreBoard(session: session),
           const Divider(height: 1),
+          // ── Historique des boules ───────────────────────────────────────
+          _ActionLog(session: session),
+          const Divider(height: 1),
           // ── Boules sur la table ─────────────────────────────────────────
           Expanded(child: _BallGrid(session: session)),
           const Divider(height: 1),
@@ -462,6 +465,148 @@ class _ActionBtn extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─── Historique des boules ────────────────────────────────────────────────────
+
+class _ActionLog extends StatefulWidget {
+  final GameSession session;
+  const _ActionLog({required this.session});
+
+  @override
+  State<_ActionLog> createState() => _ActionLogState();
+}
+
+class _ActionLogState extends State<_ActionLog> {
+  bool _expanded = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final actions = widget.session.actions.reversed.toList();
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      color: cs.surfaceContainerHighest,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // En-tête cliquable
+          GestureDetector(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.list_alt_rounded, size: 14, color: cs.outline),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Historique des boules',
+                    style: GoogleFonts.outfit(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: cs.outline,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${widget.session.actions.length} action${widget.session.actions.length > 1 ? 's' : ''}',
+                    style: GoogleFonts.outfit(fontSize: 11, color: cs.outline),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    _expanded ? Icons.expand_less : Icons.expand_more,
+                    size: 16,
+                    color: cs.outline,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Liste des actions
+          if (_expanded)
+            SizedBox(
+              height: actions.isEmpty ? 36 : 120,
+              child: actions.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Aucune action pour l\'instant…',
+                        style: GoogleFonts.outfit(
+                            fontSize: 12,
+                            color: cs.outline,
+                            fontStyle: FontStyle.italic),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      itemCount: actions.length,
+                      itemBuilder: (_, i) => _LogRow(action: actions[i]),
+                    ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LogRow extends StatelessWidget {
+  final GameAction action;
+  const _LogRow({required this.action});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isPos = action.scoreDelta > 0;
+    final isNeu = action.scoreDelta == 0;
+    final deltaColor =
+        isNeu ? const Color(0xFFF57C00) : isPos ? const Color(0xFF4CAF50) : cs.error;
+    final deltaText = isNeu
+        ? '⚡ 0'
+        : isPos
+            ? '+${action.scoreDelta}'
+            : '${action.scoreDelta}';
+    final typeIcon = action.type == ActionType.scored
+        ? '✓'
+        : action.type == ActionType.fault
+            ? '✗'
+            : '⚡';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          // Boule
+          BallWidget(number: action.ballValue, size: 26),
+          const SizedBox(width: 8),
+          // Joueur
+          Expanded(
+            child: Text(
+              action.playerName,
+              style: GoogleFonts.outfit(
+                  fontSize: 12, fontWeight: FontWeight.w600),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // Type
+          Text(
+            typeIcon,
+            style: TextStyle(fontSize: 13, color: deltaColor),
+          ),
+          const SizedBox(width: 6),
+          // Delta
+          Text(
+            '$deltaText pts',
+            style: GoogleFonts.outfit(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: deltaColor,
+            ),
+          ),
+        ],
       ),
     );
   }

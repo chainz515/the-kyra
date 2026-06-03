@@ -356,7 +356,11 @@ function applyGameAction(playerId, ball, type) {
   const delta = type==='scored'?ball:type==='fault'?-ball:0;
   const player = game.players.find(p=>p.id===playerId);
   player.score += delta;
-  game.remainingBalls = game.remainingBalls.filter(b=>b!==ball);
+  // Boule retirée SEULEMENT sur + (scored) ou ⚡ (ballWhite)
+  // Sur − (fault) la boule reste sur la table
+  if(type==='scored'||type==='ballWhite'){
+    game.remainingBalls = game.remainingBalls.filter(b=>b!==ball);
+  }
   game.actions.push({playerId,playerName:player.name,type,ball,delta,time:new Date().toISOString()});
   checkEliminations();
   checkGameOver();

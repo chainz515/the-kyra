@@ -51,10 +51,25 @@ void main() {
       expect(r.players.first.score, -12);
     });
 
-    test('retire la boule des remainingBalls', () {
+    test('la boule RESTE sur la table (boule non jouée)', () {
       final s = _makeSession();
       final r = useCase.apply(s, 'p1', 12, ActionType.fault);
-      expect(r.remainingBalls, isNot(contains(12)));
+      // La faute ne retire pas la boule — elle reste disponible
+      expect(r.remainingBalls, contains(12));
+    });
+  });
+
+  group('ballWhite (⚡)', () {
+    test('ne change pas le score', () {
+      final s = _makeSession();
+      final r = useCase.apply(s, 'p1', 10, ActionType.ballWhite);
+      expect(r.players.first.score, 0);
+    });
+
+    test('retire la boule des remainingBalls', () {
+      final s = _makeSession();
+      final r = useCase.apply(s, 'p1', 10, ActionType.ballWhite);
+      expect(r.remainingBalls, isNot(contains(10)));
     });
   });
 

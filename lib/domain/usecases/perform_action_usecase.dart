@@ -36,9 +36,11 @@ class PerformActionUseCase {
     final updatedPlayers =
         _applyDelta(session.players, playerId, delta);
 
-    // La boule est retirée de la table dans tous les cas
-    final newRemaining =
-        session.remainingBalls.where((b) => b != ball).toList();
+    // La boule est retirée SEULEMENT si scored (+) ou ballWhite (⚡)
+    // Pour une faute (-) la boule reste sur la table
+    final newRemaining = (type == ActionType.scored || type == ActionType.ballWhite)
+        ? session.remainingBalls.where((b) => b != ball).toList()
+        : session.remainingBalls;
 
     var next = session.copyWith(
       players: updatedPlayers,
