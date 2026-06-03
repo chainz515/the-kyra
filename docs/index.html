@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="The Kyra">
+<meta name="theme-color" content="#1B5E20">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>The Kyra</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --green:#1B5E20;--green2:#2E7D32;--green3:#4CAF50;
+  --red:#C62828;--orange:#F57C00;--blue:#1565C0;
+  --bg:#0d1f13;--surface:#1a2e1e;--surface2:#223827;
+  --text:#ffffff;--text2:rgba(255,255,255,0.6);--text3:rgba(255,255,255,0.3);
+  --border:rgba(255,255,255,0.1);--radius:16px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;
+  min-height:100vh;min-height:-webkit-fill-available;overflow-x:hidden}
+.screen{display:none;min-height:100vh;min-height:-webkit-fill-available}
+.screen.active{display:flex;flex-direction:column}
+/* ── HEADER ── */
+.app-bar{background:var(--green);padding:env(safe-area-inset-top,12px) 16px 12px;
+  display:flex;align-items:center;gap:12px;min-height:56px}
+.app-bar h1{font-size:18px;font-weight:800;letter-spacing:1px;flex:1}
+.app-bar .icon-btn{background:none;border:none;color:#fff;padding:8px;
+  border-radius:50%;cursor:pointer;display:flex;font-size:20px}
+/* ── HOME ── */
+#s-home{justify-content:space-between;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+.home-hero{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:40px 32px 24px;text-align:center;gap:16px}
+.home-logo{font-size:72px;line-height:1}
+.home-title{font-size:42px;font-weight:900;letter-spacing:2px;color:var(--green3)}
+.home-sub{font-size:14px;color:var(--text2)}
+.home-btns{display:flex;flex-direction:column;gap:12px;padding:0 24px 32px}
+.btn{width:100%;padding:16px;border:none;border-radius:var(--radius);
+  font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;
+  justify-content:center;gap:10px;transition:opacity .15s,transform .1s;letter-spacing:.3px}
+.btn:active{opacity:.8;transform:scale(.98)}
+.btn-primary{background:var(--green2);color:#fff}
+.btn-outline{background:transparent;color:var(--text);
+  border:1.5px solid var(--border)}
+.home-credit{text-align:center;color:var(--text3);font-size:12px;
+  font-style:italic;padding-bottom:env(safe-area-inset-bottom,16px)}
+/* ── NEW GAME ── */
+#s-new-game .body{flex:1;overflow-y:auto;padding:20px 20px
+  env(safe-area-inset-bottom,20px)}
+.count-row{display:flex;justify-content:center;gap:8px;margin:20px 0}
+.count-btn{width:48px;height:48px;border-radius:50%;border:2px solid var(--border);
+  background:var(--surface);color:var(--text);font-size:18px;font-weight:800;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.count-btn.sel{background:var(--green2);border-color:var(--green2);
+  box-shadow:0 0 16px rgba(46,125,50,.5)}
+.section-label{font-size:13px;font-weight:600;color:var(--text2);
+  margin-bottom:12px;margin-top:20px}
+.player-input{width:100%;background:var(--surface);border:1.5px solid var(--border);
+  border-radius:12px;padding:14px 16px;color:var(--text);font-size:15px;
+  margin-bottom:10px;outline:none;transition:.2s}
+.player-input:focus{border-color:var(--green3)}
+.info-box{background:rgba(46,125,50,.15);border:1px solid rgba(46,125,50,.3);
+  border-radius:12px;padding:12px 16px;font-size:13px;color:var(--text2);
+  line-height:1.6;margin-top:8px}
+/* ── GAME ── */
+#s-game{overflow:hidden}
+.game-topbar{padding:8px 12px;background:var(--surface);
+  font-size:13px;font-weight:600;color:var(--green3);text-align:center;
+  border-bottom:1px solid var(--border)}
+/* Scoreboard horizontal */
+.scoreboard{display:flex;gap:8px;padding:10px 12px;overflow-x:auto;
+  background:var(--surface);border-bottom:1px solid var(--border);
+  scrollbar-width:none}
+.scoreboard::-webkit-scrollbar{display:none}
+.player-chip{min-width:72px;padding:8px 10px;border-radius:12px;
+  border:2px solid var(--border);background:var(--bg);cursor:pointer;
+  text-align:center;transition:.2s;flex-shrink:0}
+.player-chip.sel{border-color:var(--green3);background:rgba(76,175,80,.15);
+  box-shadow:0 0 14px rgba(76,175,80,.35)}
+.player-chip.elim{opacity:.4;pointer-events:none}
+.chip-name{font-size:11px;font-weight:600;color:var(--text2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px}
+.chip-score{font-size:26px;font-weight:900;line-height:1.1;color:var(--text)}
+.chip-score.sel{color:var(--green3)}
+.chip-max{font-size:9px;color:var(--text3)}
+/* Ball grid */
+.ball-section{flex:1;overflow-y:auto;padding:8px 12px}
+.step-hint{font-size:12px;font-weight:600;color:var(--green3);
+  padding:6px 4px;margin-bottom:8px}
+.ball-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.ball-cell{aspect-ratio:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;cursor:pointer;
+  border-radius:12px;padding:4px;transition:.2s;border:2px solid transparent}
+.ball-cell.sel{border-color:gold;background:rgba(255,215,0,.12);
+  box-shadow:0 0 16px rgba(255,215,0,.4)}
+.ball-cell.played{opacity:.3;pointer-events:none}
+.ball-circle{width:56px;height:56px;border-radius:50%;display:flex;
+  align-items:center;justify-content:center;font-size:20px;font-weight:900;
+  position:relative;box-shadow:inset -3px -3px 8px rgba(0,0,0,.4),
+  2px 2px 8px rgba(0,0,0,.3)}
+.ball-circle .shine{position:absolute;top:6px;left:10px;width:14px;height:9px;
+  background:rgba(255,255,255,.45);border-radius:50%;transform:rotate(-30deg)}
+/* Action bar */
+.action-bar{background:var(--surface);border-top:1px solid var(--border);
+  padding:10px 12px env(safe-area-inset-bottom,10px);
+  display:flex;align-items:center;gap:8px}
+.action-info{flex:1;font-size:13px;font-weight:600;color:var(--text2);
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.action-info.ready{color:var(--green3)}
+.act-btn{width:58px;height:58px;border-radius:14px;border:none;
+  font-size:22px;font-weight:900;cursor:pointer;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;
+  transition:.15s;gap:2px}
+.act-btn:active{transform:scale(.93)}
+.act-btn:disabled{opacity:.25;pointer-events:none}
+.act-btn .sub{font-size:9px;font-weight:600;line-height:1}
+.btn-plus{background:rgba(46,125,50,.2);color:#4CAF50;
+  border:2px solid rgba(46,125,50,.5)}
+.btn-minus{background:rgba(198,40,40,.2);color:#EF5350;
+  border:2px solid rgba(198,40,40,.5)}
+.btn-flash{background:rgba(245,124,0,.2);color:#FFA726;
+  border:2px solid rgba(245,124,0,.5)}
+.btn-undo{background:rgba(255,255,255,.05);color:var(--text2);
+  border:2px solid var(--border);font-size:18px}
+/* ── GAME OVER ── */
+#s-gameover .body{flex:1;overflow-y:auto;padding:20px 20px
+  env(safe-area-inset-bottom,20px)}
+.trophy{text-align:center;font-size:64px;margin:8px 0}
+.winner-card{background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(46,125,50,.15));
+  border:1px solid rgba(255,215,0,.4);border-radius:var(--radius);
+  padding:20px;text-align:center;margin-bottom:20px}
+.winner-name{font-size:28px;font-weight:900;color:#FFD700}
+.winner-pts{font-size:14px;color:var(--text2);margin-top:4px}
+.rank-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.rank-row{background:var(--surface);border-radius:12px;padding:12px 16px;
+  display:flex;align-items:center;gap:12px}
+.rank-row.winner{background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.3)}
+.rank-medal{font-size:24px;width:32px;text-align:center}
+.rank-name{flex:1;font-size:15px;font-weight:600;color:var(--text)}
+.rank-elim{font-size:10px;color:var(--red)}
+.rank-score{font-size:20px;font-weight:900;color:var(--green3)}
+.go-btns{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+/* ── HISTORY ── */
+#s-history .body{flex:1;overflow-y:auto;padding:16px 16px
+  env(safe-area-inset-bottom,16px)}
+.hist-card{background:var(--surface);border-radius:var(--radius);
+  padding:14px 16px;margin-bottom:12px}
+.hist-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.hist-title{flex:1;font-size:15px;font-weight:700}
+.hist-date{font-size:11px;color:var(--text3)}
+.hist-chips{display:flex;flex-wrap:wrap;gap:6px}
+.hist-chip{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;
+  background:var(--surface2)}
+.hist-chip.win{background:rgba(255,215,0,.2);color:#FFD700}
+.empty{text-align:center;color:var(--text3);padding:60px 20px;font-size:14px}
+/* ── SNACKBAR ── */
+#snack{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 80px);
+  left:50%;transform:translateX(-50%) translateY(20px);
+  background:#333;color:#fff;padding:12px 20px;border-radius:24px;
+  font-size:14px;font-weight:600;white-space:nowrap;opacity:0;
+  transition:all .3s;pointer-events:none;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+#snack.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#snack.green{background:var(--green2)}
+#snack.red{background:var(--red)}
+#snack.orange{background:var(--orange)}
+/* ── INSTALL BANNER ── */
+#install-banner{display:none;background:var(--green2);padding:12px 16px;
+  text-align:center;font-size:13px;gap:8px;align-items:center;justify-content:center}
+#install-banner button{background:rgba(255,255,255,.2);border:none;
+  color:#fff;padding:6px 14px;border-radius:20px;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+
+<!-- SNACKBAR -->
+<div id="snack"></div>
+
+<!-- INSTALL BANNER (Android) -->
+<div id="install-banner">
+  🎱 Installer The Kyra sur votre écran d'accueil !
+  <button id="install-btn">Installer</button>
+</div>
+
+<!-- ═══════════════════ HOME ═══════════════════ -->
+<div id="s-home" class="screen active">
+  <div class="home-hero">
+    <div class="home-logo">🎱</div>
+    <div class="home-title">THE KYRA</div>
+    <div class="home-sub">Compteur de score billard</div>
+  </div>
+  <div class="home-btns">
+    <button class="btn btn-primary" onclick="showScreen('s-new-game')">
+      ＋ Nouvelle partie
+    </button>
+    <button class="btn btn-outline" onclick="showHistory()">
+      ⏱ Historique
+    </button>
+  </div>
+  <div class="home-credit">Créé par Héros Ileko</div>
+</div>
+
+<!-- ═══════════════════ NEW GAME ═══════════════════ -->
+<div id="s-new-game" class="screen">
+  <div class="app-bar">
+    <button class="icon-btn" onclick="showScreen('s-home')">←</button>
+    <h1>Nouvelle partie</h1>
+  </div>
+  <div class="body">
+    <div class="section-label">Nombre de joueurs</div>
+    <div class="count-row" id="count-row"></div>
+    <div class="section-label">Noms des joueurs</div>
+    <div id="player-inputs"></div>
+    <div class="info-box">
+      Boules 7 à 17 disponibles · Total : 132 pts<br>
+      Tout joueur peut jouer n'importe quelle boule
+    </div>
+    <div style="height:20px"></div>
+    <button class="btn btn-primary" onclick="startGame()" style="margin-bottom:env(safe-area-inset-bottom,16px)">
+      ▶ Lancer la partie
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════ GAME ═══════════════════ -->
+<div id="s-game" class="screen">
+  <div class="app-bar">
+    <button class="icon-btn" onclick="confirmExit()">⌂</button>
+    <h1 id="game-title">The Kyra</h1>
+    <button class="icon-btn" onclick="undoAction()" id="undo-btn">↩</button>
+  </div>
+  <div class="game-topbar" id="game-topbar">0/11 boules · 132 pts restants</div>
+  <div class="scoreboard" id="scoreboard"></div>
+  <div class="ball-section">
+    <div class="step-hint" id="step-hint">1. Sélectionnez un joueur</div>
+    <div class="ball-grid" id="ball-grid"></div>
+  </div>
+  <div class="action-bar">
+    <div class="action-info" id="action-info">Sélectionnez joueur + boule</div>
+    <button class="act-btn btn-plus" id="btn-plus" onclick="applyAction('scored')" disabled>
+      +<span class="sub">marque</span>
+    </button>
+    <button class="act-btn btn-minus" id="btn-minus" onclick="applyAction('fault')" disabled>
+      −<span class="sub">faute</span>
+    </button>
+    <button class="act-btn btn-flash" id="btn-flash" onclick="applyAction('ballWhite')" disabled>
+      ⚡<span class="sub">0 pt</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════ GAME OVER ═══════════════════ -->
+<div id="s-gameover" class="screen">
+  <div class="app-bar">
+    <h1>Partie terminée !</h1>
+  </div>
+  <div class="body">
+    <div class="trophy">🏆</div>
+    <div class="winner-card" id="winner-card"></div>
+    <div class="rank-list" id="rank-list"></div>
+    <div class="go-btns">
+      <button class="btn btn-primary" onclick="showScreen('s-new-game')">+ Nouvelle partie</button>
+      <button class="btn btn-outline" onclick="showScreen('s-home')">⌂ Accueil</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ HISTORY ═══════════════════ -->
+<div id="s-history" class="screen">
+  <div class="app-bar">
+    <button class="icon-btn" onclick="showScreen('s-home')">←</button>
+    <h1>Historique</h1>
+  </div>
+  <div class="body" id="history-body"></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// GAME LOGIC
+// ════════════════════════════════════════════════════════════════
+const ALL_BALLS = [7,8,9,10,11,12,13,14,15,16,17];
+
+const BALL_COLORS = {
+  7:'#8B1A1A',8:'#111',9:'#FFD600',10:'#1565C0',11:'#C62828',
+  12:'#6A1B9A',13:'#E65100',14:'#2E7D32',15:'#4E342E',16:'#880E4F',17:'#37474F'
+};
+const BALL_TEXT = {9:'#111'};
+
+let game = null;
+let prevGame = null;
+let selPlayerId = null;
+let selBall = null;
+
+function newGame(playerNames) {
+  game = {
+    id: Date.now(),
+    players: playerNames.map((n,i) => ({
+      id:'p'+i, name:n.trim(), score:0, isEliminated:false, turnOrder:i
+    })),
+    remainingBalls: [...ALL_BALLS],
+    actions: [],
+    isGameOver: false,
+    winnerId: null,
+    startTime: new Date().toISOString(),
+    endTime: null
+  };
+  prevGame = null;
+  selPlayerId = null;
+  selBall = null;
+}
+
+function remainingPoints() {
+  return game.remainingBalls.reduce((s,b)=>s+b,0);
+}
+
+function activePlayers() {
+  return game.players.filter(p=>!p.isEliminated);
+}
+
+function leaderScore() {
+  const a = activePlayers();
+  return a.length ? Math.max(...a.map(p=>p.score)) : 0;
+}
+
+function applyGameAction(playerId, ball, type) {
+  prevGame = JSON.parse(JSON.stringify(game));
+  const delta = type==='scored'?ball:type==='fault'?-ball:0;
+  const player = game.players.find(p=>p.id===playerId);
+  player.score += delta;
+  game.remainingBalls = game.remainingBalls.filter(b=>b!==ball);
+  game.actions.push({playerId,playerName:player.name,type,ball,delta,time:new Date().toISOString()});
+  checkEliminations();
+  checkGameOver();
+}
+
+function checkEliminations() {
+  const active = activePlayers();
+  if(active.length<=1) return;
+  const leader = leaderScore();
+  const rem = remainingPoints();
+  game.players.forEach(p=>{
+    if(p.isEliminated) return;
+    if(p.score+rem<=leader && p.score<leader) p.isEliminated=true;
+  });
+  if(game.players.every(p=>p.isEliminated)){
+    const best = Math.max(...game.players.map(p=>p.score));
+    game.players.forEach(p=>{ if(p.score===best) p.isEliminated=false; });
+  }
+}
+
+function checkGameOver() {
+  if(game.remainingBalls.length===0 || activePlayers().length<=1){
+    game.isGameOver=true;
+    game.endTime=new Date().toISOString();
+    const cands = activePlayers().length?activePlayers():game.players;
+    const winner = cands.reduce((b,p)=>p.score>=b.score?p:b);
+    game.winnerId=winner.id;
+    saveToHistory();
+  }
+}
+
+function saveToHistory() {
+  const hist = JSON.parse(localStorage.getItem('kyra-history')||'[]');
+  hist.unshift({...game});
+  localStorage.setItem('kyra-history', JSON.stringify(hist.slice(0,50)));
+}
+
+// ════════════════════════════════════════════════════════════════
+// UI
+// ════════════════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='s-new-game') renderNewGame();
+}
+
+function showHistory() {
+  renderHistory();
+  showScreen('s-history');
+}
+
+let playerCount = 2;
+
+function renderNewGame() {
+  const row = document.getElementById('count-row');
+  row.innerHTML = [2,3,4,5,6].map(n=>`
+    <button class="count-btn${n===playerCount?' sel':''}" onclick="setCount(${n})">${n}</button>
+  `).join('');
+  renderPlayerInputs();
+}
+
+function setCount(n) {
+  playerCount=n;
+  renderNewGame();
+}
+
+function renderPlayerInputs() {
+  const c = document.getElementById('player-inputs');
+  const existing = [...c.querySelectorAll('input')].map(i=>i.value);
+  c.innerHTML = Array.from({length:playerCount},(_,i)=>`
+    <input class="player-input" placeholder="Joueur ${i+1}"
+      value="${existing[i]||'Joueur '+(i+1)}">
+  `).join('');
+}
+
+function startGame() {
+  const inputs = [...document.querySelectorAll('.player-input')];
+  const names = inputs.map(i=>i.value.trim()).filter(n=>n);
+  if(names.length<2){ showSnack('Minimum 2 joueurs',null); return; }
+  newGame(names);
+  showScreen('s-game');
+  renderGame();
+}
+
+// ── GAME SCREEN ──────────────────────────────────────────────────
+function renderGame() {
+  if(!game) return;
+  const played = ALL_BALLS.length - game.remainingBalls.length;
+  document.getElementById('game-topbar').textContent =
+    `${played}/11 boules · ${remainingPoints()} pts restants`;
+  document.getElementById('undo-btn').style.opacity = prevGame?'1':'0.3';
+  renderScoreboard();
+  renderBallGrid();
+  updateActionBar();
+  updateStepHint();
+  if(game.isGameOver) setTimeout(showGameOver, 600);
+}
+
+function renderScoreboard() {
+  const rem = remainingPoints();
+  document.getElementById('scoreboard').innerHTML = game.players.map(p=>`
+    <div class="player-chip${p.id===selPlayerId?' sel':''}${p.isEliminated?' elim':''}"
+         onclick="selectPlayer('${p.id}')">
+      <div class="chip-name" title="${p.name}">${p.name}</div>
+      <div class="chip-score${p.id===selPlayerId?' sel':''}">${p.score}</div>
+      <div class="chip-max">${p.isEliminated?'❌':'max '+(p.score+rem)}</div>
+    </div>
+  `).join('');
+}
+
+function renderBallGrid() {
+  document.getElementById('ball-grid').innerHTML = ALL_BALLS.map(ball=>{
+    const remaining = game.remainingBalls.includes(ball);
+    const isSel = ball===selBall;
+    const color = BALL_COLORS[ball];
+    const textColor = BALL_TEXT[ball]||'#fff';
+    return `
+      <div class="ball-cell${isSel?' sel':''}${!remaining?' played':''}"
+           onclick="${remaining?`selectBall(${ball})`:''}">
+        <div class="ball-circle" style="background:${color};color:${textColor}">
+          ${ball}
+          <div class="shine"></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function updateActionBar() {
+  const ready = selPlayerId && selBall;
+  const info = document.getElementById('action-info');
+  if(ready){
+    const p = game.players.find(x=>x.id===selPlayerId);
+    info.textContent = `${p.name}  ·  boule ${selBall}`;
+    info.className='action-info ready';
+  } else {
+    info.textContent='Sélectionnez joueur + boule';
+    info.className='action-info';
+  }
+  ['btn-plus','btn-minus','btn-flash'].forEach(id=>{
+    document.getElementById(id).disabled=!ready;
+  });
+}
+
+function updateStepHint() {
+  const hint = document.getElementById('step-hint');
+  if(!selPlayerId) hint.textContent='1. Sélectionnez un joueur ↑';
+  else if(!selBall) hint.textContent='2. Sélectionnez la boule jouée ↓';
+  else hint.textContent='3. Choisissez l\'action  +  −  ⚡';
+}
+
+function selectPlayer(id) {
+  selPlayerId = selPlayerId===id ? null : id;
+  renderGame();
+}
+
+function selectBall(ball) {
+  selBall = selBall===ball ? null : ball;
+  renderGame();
+}
+
+function applyAction(type) {
+  if(!selPlayerId||!selBall) return;
+  const pName = game.players.find(p=>p.id===selPlayerId).name;
+  const delta = type==='scored'?selBall:type==='fault'?-selBall:0;
+  applyGameAction(selPlayerId, selBall, type);
+  // snack
+  const txt = `${pName}  ${delta>0?'+':''}${delta} pts  (boule ${selBall})`;
+  const col = type==='scored'?'green':type==='fault'?'red':'orange';
+  showSnack(txt, col);
+  selPlayerId=null; selBall=null;
+  renderGame();
+}
+
+function undoAction() {
+  if(!prevGame) return;
+  game = JSON.parse(JSON.stringify(prevGame));
+  prevGame = null;
+  selPlayerId=null; selBall=null;
+  renderGame();
+  showSnack('Action annulée', null);
+}
+
+function confirmExit() {
+  if(confirm('Quitter la partie ? Elle ne sera pas sauvegardée.')) {
+    game=null; prevGame=null;
+    showScreen('s-home');
+  }
+}
+
+// ── GAME OVER ─────────────────────────────────────────────────────
+function showGameOver() {
+  const winner = game.players.find(p=>p.id===game.winnerId);
+  document.getElementById('winner-card').innerHTML = `
+    <div style="font-size:14px;color:rgba(255,255,255,.5);margin-bottom:6px">🎉 Gagnant</div>
+    <div class="winner-name">${winner?winner.name:'—'}</div>
+    <div class="winner-pts">avec ${winner?winner.score:0} points</div>
+  `;
+  const sorted = [...game.players].sort((a,b)=>{
+    if(!a.isEliminated&&b.isEliminated) return -1;
+    if(a.isEliminated&&!b.isEliminated) return 1;
+    return b.score-a.score;
+  });
+  const medals=['🥇','🥈','🥉'];
+  document.getElementById('rank-list').innerHTML = sorted.map((p,i)=>`
+    <div class="rank-row${p.id===game.winnerId?' winner':''}">
+      <div class="rank-medal">${medals[i]||i+1}</div>
+      <div>
+        <div class="rank-name">${p.name}</div>
+        ${p.isEliminated?'<div class="rank-elim">Éliminé</div>':''}
+      </div>
+      <div class="rank-score">${p.score} pts</div>
+    </div>
+  `).join('');
+  showScreen('s-gameover');
+}
+
+// ── HISTORY ──────────────────────────────────────────────────────
+function renderHistory() {
+  const hist = JSON.parse(localStorage.getItem('kyra-history')||'[]');
+  const body = document.getElementById('history-body');
+  if(!hist.length){
+    body.innerHTML='<div class="empty">🎱<br><br>Aucune partie enregistrée</div>';
+    return;
+  }
+  body.innerHTML = hist.map(g=>{
+    const winner = g.players.find(p=>p.id===g.winnerId);
+    const date = new Date(g.startTime).toLocaleDateString('fr-FR');
+    const sorted = [...g.players].sort((a,b)=>b.score-a.score);
+    return `<div class="hist-card">
+      <div class="hist-top">
+        <div class="hist-title">🏆 ${winner?winner.name:'—'} a gagné</div>
+        <div class="hist-date">${date}</div>
+      </div>
+      <div class="hist-chips">
+        ${sorted.map(p=>`
+          <span class="hist-chip${p.id===g.winnerId?' win':''}">
+            ${p.name} · ${p.score}
+          </span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── SNACKBAR ─────────────────────────────────────────────────────
+let snackTimer;
+function showSnack(msg, color) {
+  const el = document.getElementById('snack');
+  el.textContent = msg;
+  el.className = 'show'+(color?' '+color:'');
+  clearTimeout(snackTimer);
+  snackTimer = setTimeout(()=>el.className='', 2500);
+}
+
+// ── PWA INSTALL ──────────────────────────────────────────────────
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  const banner = document.getElementById('install-banner');
+  banner.style.display='flex';
+  document.getElementById('install-btn').onclick=()=>{
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(()=>{
+      banner.style.display='none';
+    });
+  };
+});
+
+// ── SERVICE WORKER ────────────────────────────────────────────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// ── INIT ─────────────────────────────────────────────────────────
+renderNewGame();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "The Kyra",
+  "short_name": "The Kyra",
+  "description": "Compteur de score billard — Créé par Héros Ileko",
+  "start_url": "/the-kyra/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1B5E20",
+  "background_color": "#0d1f13",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
